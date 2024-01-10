@@ -1,7 +1,7 @@
 
 
 class ApiErorHandling extends Error {
-    constructor(statusCode, message = "somthing went wrong", errors = [], statck = "") {
+    constructor(statusCode, message = "somthing went wrong", errors = [], stack = "") {
         super(message)
         this.statusCode = statusCode
         this.data = null
@@ -10,4 +10,4 @@ class ApiErorHandling extends Error {
         this.errors = errors
     }
 }
-export { ApiErorHandling}
+export { ApiErorHandling }

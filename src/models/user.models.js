@@ -1,5 +1,5 @@
 import mongoose from 'mongoose';
-import { Jwt } from 'jsonwebtoken';
+import jwt from 'jsonwebtoken';
 import bcrypt from 'bcrypt'
 const Userschema = new mongoose.Schema({
     userName: {
@@ -48,41 +48,63 @@ const Userschema = new mongoose.Schema({
 }, {
     timestamps: true
 });
+async function getHashedPassword(userId) {
+    try {
+        const user = await User.findById(userId);
+
+        if (user) {
+            const hashedPassword = user.password;
+            console.log('Retrieved Hashed Password:', hashedPassword);
+            return hashedPassword;
+        } else {
+            console.log('User not found');
+        }
+    } catch (error) {
+        console.error('Error retrieving hashed password:', error);
+    }
+}
+
 Userschema.pre("save", async function (next) {
     if (this.isModified('password')) {
-        this.password = bcrypt.hash(this.password, 10)
-        next();
-    } else {
-        return next()
+        this.password = await bcrypt.hash(this.password, 12);
+        console.log(this.password);
+
     }
+    next();
 })
-Userschema.methods.isPasswordCorrect = async function (password) {
-    return await bcrypt.compare(password, this.password)
+Userschema.methods.isPasswordCorrect = async function (password, userid) {
+    const hashedPassword = await getHashedPassword(userid);
+    console.log(password);
+    console.log(hashedPassword);
+    return await bcrypt.compare(password, hashedPassword)
 }
 
 Userschema.methods.generateAccessToken = function () {
+    console.log('Environment Variables:', process.env);
+
     return jwt.sign(
         {
             _id: this._id,
             email: this.email,
-            username: this.userName,
-            fullname: this.fullname
+            // ... other user data
         },
-        process.env.ACCESS_TOKEN_SECRET,
+        process.env.ACCESS_TN_SECREOKET,
         {
-            expiresIn: process.env.ACCESS_TOKEN_EXPIRY
+            expiresIn: process.env.ACCESS_TOKEN_EXPIRY,
         }
     );
 };
+
 Userschema.methods.generateRefreshToken = function () {
+    console.log('Environment Variables:', process.env);
+
     return jwt.sign(
         {
             _id: this._id,
-
         },
         process.env.REFRESH_TOKEN_SECRET,
         {
-            expiresIn: process.env.REFRESH_TOKEN_EXPIRY
+            expiresIn: process.env.REFRESH_TOKEN_EXPIRY,
         }
     );
 };

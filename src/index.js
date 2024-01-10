@@ -1,10 +1,23 @@
 import databaseConnection from './db/Connection.js'
 import dotenv from 'dotenv'
+import { app } from './app.js'
 
-dotenv.config({
-    path: "./env"
-})
-databaseConnection();
+dotenv.config(
+    {
+        path: './.env'
+    }
+);
+
+databaseConnection()
+    .then(() => {
+        app.listen(3905, () => {
+            console.log(`⚙️ Server is running at port : ${process.env.PORT}`);
+
+        });
+    })
+    .catch((error) => {
+        console.log("MONGO db connection failed !!! ", error);
+    });
 
 
 /*
@@ -33,3 +46,4 @@ console.log("mongo url", process.env.MONGODB_URI);
 })()
 
 */
+
